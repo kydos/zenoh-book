@@ -10,3 +10,4 @@ edition = "2024"
 
 [output.html]
 git-repository-url = "https://github.com/kydos/zenoh-book"
+site-url = "/zenoh-book/"
