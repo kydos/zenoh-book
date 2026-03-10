@@ -20,17 +20,21 @@ The three corresponding abstractions are:
 
 Zenoh is not a broker protocol. There is no central message broker that all traffic passes through. Sessions form direct peer-to-peer connections when possible, and route through infrastructure nodes (routers) only when topology requires it. This design lets Zenoh run on microcontrollers with tens of kilobytes of RAM, on embedded Linux gateways, and on datacenter servers, all using the same wire protocol and the same API surface.
 
-## Protocol Genealogy
+## Zenoh Genesis
 
-Zenoh descends from two earlier Eclipse projects: FIWARE NGSI and FNMS, the latter being a ZeroMQ-based middleware. Both were designed for IoT and machine-to-machine communication, and both exposed limitations when extended to edge-to-cloud scenarios: NGSI was REST-only with high per-message overhead, and FNMS required a broker topology that did not scale well across heterogeneous networks.
+Around 2009–2010, while working on extremely large-scale systems spanning military, aerospace, and smart city deployments, it became clear that no existing protocol could cover the full spectrum from microcontroller to datacenter. Each protocol solved part of the problem and failed somewhere else on the stack.
 
-Zenoh was designed to learn from three well-established protocols:
+**DDS** provided location transparency for data in motion and a data-centric model, but could not scale down to constrained hardware and lost its location-transparency guarantees the moment data was stored — at which point applications were forced back to centralized cloud storage.
 
-- **DDS (Data Distribution Service)** — Zenoh adopts the data-centric model and the concept of a shared keyspace (analogous to DDS topics and the global data space). It discards the heavy QoS negotiation machinery and the RTPS wire format.
-- **MQTT** — Zenoh adopts the lightweight publish/subscribe model and the hierarchical topic structure. It extends the model with wildcard queries and queryable storage, which MQTT does not natively support.
-- **REST** — Zenoh adopts the request/reply semantics of HTTP GET, treating distributed storage as a resource-addressed archive rather than an ephemeral message queue.
+**CoAP** was effective for integrating small devices with web applications but remained inherently client/server and cloud-centric.
 
-The result is a protocol that can unify telemetry (pub/sub), command-and-control (get/reply), and data storage (queryable) in a single abstraction, without forcing the programmer to bridge between three different middleware layers.
+**MQTT** introduced a lightweight broker-based pub/sub model suited to cloud-dependent applications. Its broker topology, however, created what could be called the MQTT paradox: two devices on the same local network still route every message through a broker running on a cloud server thousands of kilometres away, adding latency and creating a single point of failure.
+
+The result of combining these protocols to cover a full system was what could be called the **Digital Frankenstein** era: large-scale cloud-to-microcontroller systems duct-taped together from a series of protocol stacks, each covering one network segment, with no unified semantics across the whole.
+
+Zenoh was designed to close that gap. The goal was a single protocol that works efficiently from microcontroller to datacenter, with no topological constraints, and that provides unified abstractions for data in motion (pub/sub), data at rest (distributed queries), and location-transparent computation.
+
+The name itself encodes the design intent. It references Zeno of Elea — the pre-Socratic philosopher known for his paradoxes of infinity — and Zenon of Citium, the founder of Stoicism. It also stands for **ZEro Network OverHead**, reflecting the protocol's efficiency-first design philosophy.
 
 ## Core Architecture
 
@@ -77,16 +81,13 @@ These numbers reflect best-case configurations. Latency over TCP on a real netwo
 
 Use Zenoh when:
 
-- You need publish/subscribe and queryable storage in a single protocol without running separate middleware for each.
-- You need zero-copy shared-memory transport for high-throughput, low-latency communication between processes on the same host.
-- You need to span edge, fog, and cloud with a unified protocol — Zenoh's router topology handles heterogeneous network segments transparently.
-- DDS is too heavy for your embedded or resource-constrained environment; Zenoh's minimal footprint and wire overhead make it viable where DDS is not.
-- You need a protocol that handles intermittent connectivity gracefully, because routers can buffer and forward when endpoints reconnect.
-
-Avoid Zenoh when:
-
-- You require full DDS QoS compliance (deadline, liveliness with watchdog timers at the DDS API level, ownership strength, etc.). Zenoh provides liveliness primitives but does not expose the full DDS QoS surface.
-- You already operate a stable MQTT broker infrastructure and have no edge-to-cloud query requirements, no SHM use cases, and no plans to extend the system to constrained nodes. In that scenario, migrating to Zenoh adds complexity without clear benefit.
+- You need publish/subscribe, queryable storage, and request/reply in a single protocol. Zenoh covers all three without requiring separate middleware stacks or translation bridges between them.
+- You need to span microcontrollers, embedded gateways, and cloud servers with one protocol and one API. Zenoh-Pico runs on bare-metal targets with tens of kilobytes of RAM; the same wire protocol connects to a datacenter router.
+- You need zero-copy shared-memory transport for high-throughput, low-latency communication between processes on the same host — camera pipelines, LiDAR streams, ML inference data.
+- You need to integrate other protocols. Zenoh is designed to act as a protocol backbone: connectors exist for DDS, MQTT, ROS 2, and REST, allowing existing systems to participate in a Zenoh keyspace without being rewritten.
+- You need to span edge, fog, and cloud across heterogeneous network segments — WiFi, cellular, Ethernet, serial — with automatic topology-aware routing and no broker single point of failure.
+- You are building a system where data must be stored, queried, and streamed with consistent semantics. Zenoh's queryable storage model avoids the split between a messaging layer and a separate database layer.
+- You need efficient operation under intermittent connectivity. Zenoh routers buffer and forward when endpoints reconnect; storages answer queries from local replicas when upstream is unavailable.
 
 ## Key Terminology
 
