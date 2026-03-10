@@ -57,26 +57,6 @@ The transport layer is selected by the endpoint URI scheme (`tcp/`, `quic/`, `tl
 
 Wire overhead is minimal by design: a Zenoh data message requires as few as 4 bytes of framing overhead. The session is the entry point to everything. A session is opened with a configuration, and all publishers, subscribers, and queryables are declared on that session. All transport, routing, and resource management flow through it.
 
-## Performance
-
-Zenoh's wire format is intentionally compact. Comparing minimum framing overhead:
-
-| Protocol | Minimum framing overhead |
-|----------|--------------------------|
-| Zenoh    | 4 bytes                  |
-| MQTT 5   | 5+ bytes                 |
-| DDS/RTPS | 36+ bytes                |
-
-This difference compounds at high message rates. Smaller frames mean more messages fit in a single network packet, reducing syscall frequency and CPU time spent in the network stack.
-
-Benchmark figures from the Zenoh introductory paper and zenoh.io:
-
-- **Latency**: sub-10 microseconds on loopback when shared memory transport is active.
-- **Throughput**: exceeds 3.5 Gbit/s with SHM on the same host, because the payload never crosses the user/kernel boundary.
-- **Latency vs DDS on LAN**: approximately 5x lower, attributable to lighter framing and the absence of RTPS discovery overhead on the data path.
-
-These numbers reflect best-case configurations. Latency over TCP on a real network will be higher, dominated by OS scheduling and TCP stack behavior rather than Zenoh's own overhead.
-
 ## When to Use Zenoh
 
 Use Zenoh when:

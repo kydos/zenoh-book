@@ -76,12 +76,6 @@ cargo run --example z_sub_thr
 cargo run --example z_pub_thr -- -s 8
 ```
 
-Output from `z_sub_thr`:
-
-```
-8 bytes: 1234567 msgs/s (9.9 Mbit/s)
-```
-
 Like `z_ping`, both `z_pub_thr` and `z_sub_thr` use `.wait()` for minimal runtime overhead. This is intentional for the same reason: the benchmark measures the transport path, not the async scheduler.
 
 ## SHM Throughput
@@ -93,19 +87,6 @@ cargo run --example z_pub_shm_thr --features shared-memory -- -s 8
 ```
 
 Typical result: SHM throughput is 3–10x higher than TCP for large payloads (above 1 KB) because no serialization or kernel copy occurs. For small payloads the benefit is smaller due to fixed per-message overhead.
-
-## Throughput Numbers (Reference)
-
-These numbers are approximate and hardware-dependent. They are drawn from the Zenoh introductory paper and zenoh.io documentation.
-
-| Transport | Payload | Throughput |
-|-----------|---------|------------|
-| TCP (loopback) | 64 B | ~1.5 Gbit/s |
-| TCP (loopback) | 1 KB | ~3.5 Gbit/s |
-| SHM | 64 B | ~4 Gbit/s |
-| SHM | 1 KB | ~12 Gbit/s |
-
-Run the benchmarks on your own hardware to establish baselines before tuning.
 
 ## Tuning Parameters
 
