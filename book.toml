@@ -1,5 +1,5 @@
 [book]
-title = "Zenoh Programming in Rust"
+title = "Zenoh Programming in Rust (Draft)"
 authors = ["Angelo Corsaro"]
 description = "A practical guide to Eclipse Zenoh with Rust."
 language = "en"
@@ -9,5 +9,6 @@ src = "src"
 edition = "2024"
 
 [output.html]
+additional-css = ["theme/draft.css"]
 git-repository-url = "https://github.com/kydos/zenoh-book"
 site-url = "/zenoh-book/"
