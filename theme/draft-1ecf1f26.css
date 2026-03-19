@@ -1,0 +1,14 @@
+/* Draft watermark banner */
+.content main::before {
+    content: "DRAFT — Work in Progress";
+    display: block;
+    background-color: #f59e0b;
+    color: #1a1a1a;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    padding: 6px 0;
+    margin-bottom: 1.5rem;
+    border-radius: 3px;
+}
